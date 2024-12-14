@@ -26,8 +26,9 @@ jobs:
       
     - name: Download boot or recovery img
       run: |
-        aria2c "${{ github.event.inputs.IMG_URL }}"
+        aria2c https://github.com/dreamingsheng/action_build_twrp_device_tree/raw/main/boot.img
         ls
+
       
     - name: Start build
       run: |
