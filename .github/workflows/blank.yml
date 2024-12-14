@@ -27,16 +27,6 @@ jobs:
         sudo apt -y install python python3 python3-pip cpio wget
         pip3 install twrpdtgen
         mkdir dt
-        
-    - name: Set variables
-      run: |
-        echo "::set-output name=date::$(date +%F)"
-      id: var
-      
-    - name: Install TWRP generator 
-      run: |
-        pip3 install twrpdtgen
-        mkdir dt
     
     - name: Download boot or recovery img
       run: |
