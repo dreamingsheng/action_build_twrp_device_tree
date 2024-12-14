@@ -3,38 +3,46 @@ name: Make TWRP Device
 on:
   workflow_dispatch:
     inputs:
-      IMG_URL:    
-        description: 'URL for boot or recovery image'
+      LIBRARY_NAME:
+        description: 'LIBRARY_NAME'
         required: true
-        default: ''
+        default: 'Twrp_Device_Genter'
+      IMG_URL:
+        description: 'IMG_URL'
+        required: true
+        default: 'https://github.com/dreamingsheng/action_build_twrp_device_tree/blob/main/boot.img'
 
 jobs:
   build:
     if: github.event.repository.owner.id == github.event.sender.id
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-18.04
+    
     steps:
     - name: Check Out
-      uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.10
-
-    - name: Install Dependencies
+      uses: actions/checkout@main
+      
+    - name: Prepare the environment
       run: |
-        pip install twrpdtgen
+        sudo apt update
+        sudo apt -y install python python3 python-pip python3-pip cpio wget
+      
+    - name: Set variables
+      run: |
+        echo "::set-output name=date::$(date +%F)"
+      id: var
+      
+    - name: Install TWRP generator 
+      run: |
+        pip3 install twrpdtgen
         mkdir dt
-
+    
     - name: Download boot or recovery img
       run: |
-        aria2c ${{ github.event.inputs.IMG_URL }} -o boot.img
-        ls -lh boot.img
-
+        wget ${{ github.event.inputs.IMG_URL }}
+      
     - name: Start build
       run: |
-        python3 -m twrpdtgen -o dt/ boot.img
+        python3 -m twrpdtgen -o dt/ *.img
 
     - name: ZIP device tree
       run: |
@@ -43,10 +51,10 @@ jobs:
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
-        files: ./DeviceTree.zip
+        files: |
+          ./DeviceTree.zip
         name: TWRP_Device_Tree-${{ github.run_id }}
-        tag_name: TWRP_Device_Tree-${{ github.run_id }}
-        body: |
-          Device Tree generated for TWRP
+        tag_name: ${{ github.run_id }}
+        body: DeviceTree for twrp
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
